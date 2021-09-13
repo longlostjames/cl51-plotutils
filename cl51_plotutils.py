@@ -33,15 +33,15 @@ from matplotlib.ticker import LogFormatter
 from matplotlib import colors
 from matplotlib import rcParams
 
-#rcParams['axes.labelsize'] = 14
-#rcParams['axes.titlesize'] = 14
-#rcParams['xtick.labelsize'] = 12
-#rcParams['ytick.labelsize'] = 12
+rcParams['axes.labelsize'] = 14
+rcParams['axes.titlesize'] = 14
+rcParams['xtick.labelsize'] = 12
+rcParams['ytick.labelsize'] = 12
 
 import pyart
 import cmocean
 import cftime
-
+import colorcet
 
 # ------------------------------------------------------------------------------
 # Quicklook generation
@@ -86,9 +86,8 @@ def make_quicklook(ncfile,figpath,colormap='pyart_HomeyerRainbow',qc_threshold=2
     
     if montage:
     
-        fig, axs = plt.subplots(2, 1, figsize = (15, 8.5), constrained_layout=True)
-
-        fig.set_constrained_layout_pads(w_pad=2 / 72, h_pad=2 / 72, hspace=0.2,wspace=0.2)
+        fig, axs = plt.subplots(2, 1, figsize = (15, 8.5), constrained_layout=True);
+        fig.set_constrained_layout_pads(w_pad=4 / 72, h_pad=4 / 72, hspace=0.2, wspace=0.2)
 
         axs[0].set_ylim(0,hmax);
         axs[1].set_ylim(0,hmax);
@@ -103,7 +102,7 @@ def make_quicklook(ncfile,figpath,colormap='pyart_HomeyerRainbow',qc_threshold=2
         axs[0].xaxis.set_major_formatter(myFmt);
         h0=axs[0].pcolormesh(dtime0[:],DS['altitude'][:]/1000.,var_masked.transpose(),
                           norm=colors.LogNorm(vmin=1e-7,vmax=1e-4),
-                          cmap=colormap,shading='auto')
+                          cmap=plt.get_cmap(colormap),shading='auto')
         cb0=plt.colorbar(h0,ax=axs[0],orientation='vertical')
 
         cb0.ax.set_ylabel('$\mathrm{m}^{-1} \mathrm{sr}^{-1}$');
@@ -117,7 +116,7 @@ def make_quicklook(ncfile,figpath,colormap='pyart_HomeyerRainbow',qc_threshold=2
         axs[1].xaxis.set_major_formatter(myFmt);
         h1=axs[1].pcolormesh(dtime0[:],DS['altitude'][:]/1000.,var.transpose(),
                           norm=colors.LogNorm(vmin=1e-7,vmax=1e-4),
-                          cmap=colormap,shading='auto');
+                          cmap=plt.get_cmap(colormap),shading='auto');
 
         cb1=plt.colorbar(h1,ax=axs[1],orientation='vertical')
         cb1.ax.set_ylabel('$\mathrm{m}^{-1} \mathrm{sr}^{-1}$')
@@ -127,35 +126,33 @@ def make_quicklook(ncfile,figpath,colormap='pyart_HomeyerRainbow',qc_threshold=2
         axs[1].set_xlabel('Time (UTC)')
         axs[1].set_ylabel('Altitude (km)')
 
-        plt.gcf().text(0.1, 0.05, instrument_str,horizontalalignment='left',fontsize=12)
-
-
+        plt.gcf().text(0.0, 0.0, instrument_str,horizontalalignment='left',fontsize=12)
+	
     else:
-    
-        fig = plt.figure(figsize=(15,4));
 
-        ax1 = fig.add_subplot(111);
+        fig, axs = plt.subplots(1, 1, figsize = (15, 4), constrained_layout=True)
+        fig.set_constrained_layout_pads(w_pad=4 / 72, h_pad=4 / 72, hspace=0.2, wspace=0.2)
 
-        ax1.set_ylim(0,hmax);
-        ax1.set_xlim(dt_min,dt_max);
+        axs.set_ylim(0,hmax);
+        axs.set_xlim(dt_min,dt_max);
 
         var        = DS['attenuated_aerosol_backscatter_coefficient'][:,:];
         qc_flag    = DS['qc_flag'][:,:];
         var_masked = np.ma.masked_where(qc_flag >qc_threshold, var[:,:]);
 
-        ax1.xaxis.set_major_formatter(myFmt);
-        h1=ax1.pcolormesh(dtime0[:],DS['altitude'][:]/1000.,var_masked.transpose(),norm=colors.LogNorm(vmin=1e-7,vmax=1e-4),cmap=colormap,shading='auto')
-        cb1=plt.colorbar(h1,ax=ax1,orientation='vertical')
+        axs.xaxis.set_major_formatter(myFmt);
+        h0=axs.pcolormesh(dtime0[:],DS['altitude'][:]/1000.,var_masked.transpose(),norm=colors.LogNorm(vmin=1e-7,vmax=1e-4),cmap=plt.get_cmap(colormap),shading='auto')
+        cb0=plt.colorbar(h0,ax=axs,orientation='vertical')
 
-        cb1.ax.set_ylabel('$\mathrm{m}^{-1} \mathrm{sr}^{-1}$');
-        ax1.set_title(title_date, loc='right')
-        ax1.set_title("Attenuated backscatter coefficient (calibrated)",loc='left')
+        cb0.ax.set_ylabel('$\mathrm{m}^{-1} \mathrm{sr}^{-1}$');
+        axs.set_title(title_date, loc='right')
+        axs.set_title("Attenuated backscatter coefficient (calibrated)",loc='left')
 
-        ax1.grid(True)
-        ax1.set_xlabel('Time (UTC)')
-        ax1.set_ylabel('Altitude (km)')
+        axs.grid(True)
+        axs.set_xlabel('Time (UTC)')
+        axs.set_ylabel('Altitude (km)')
         
-        plt.gcf().text(0.1, 0.0, instrument_str,horizontalalignment='left',fontsize=12)
+        plt.gcf().text(0.0, 0.0, instrument_str,horizontalalignment='left',fontsize=12)
 
 
     DS.close()
